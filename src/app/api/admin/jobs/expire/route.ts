@@ -7,8 +7,8 @@ import { invalidateBrowseCache } from "@/services/telegram/jobBrowseService";
 export async function POST(req: NextRequest) {
   try {
     const session = await getAdminSession();
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!session || session.role === "DATA_ENTRY") {
+      return NextResponse.json({ error: "Forbidden: Data Entry accounts are not permitted to delete expired jobs." }, { status: 403 });
     }
 
     const body = await req.json().catch(() => ({}));
@@ -35,8 +35,8 @@ export async function POST(req: NextRequest) {
 export async function DELETE(req: NextRequest) {
   try {
     const session = await getAdminSession();
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!session || session.role === "DATA_ENTRY") {
+      return NextResponse.json({ error: "Forbidden: Data Entry accounts are not permitted to delete expired jobs." }, { status: 403 });
     }
 
     const now = new Date();

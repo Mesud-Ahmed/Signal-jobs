@@ -68,6 +68,8 @@ export async function handleStart(chatId: ChatId, from: TelegramFromUser, messag
 
 export async function handlePreferences(chatId: ChatId, from: TelegramFromUser, messageId?: number) {
   const user = await userService.upsertFromTelegram(from);
+  // Log meaningful interaction: User opened/clicked preferences
+  userService.trackInteraction(user.id, null, "PREFERENCES_CLICKED").catch(() => null);
   const pref = user.preference;
 
   if (!pref) {
@@ -152,14 +154,16 @@ export async function handleJobs(
   const page = Math.max(0, Math.min(options?.page ?? 0, jobs.length - 1));
   const currentJob = jobs[page];
 
-  // Track interaction asynchronously
-  userService.trackInteraction(user.id, currentJob.id, "JOB_VIEWED").catch(() => null);
-
   const isSaved = !!(await db.savedJob.findFirst({
     where: { userId: user.id, jobId: currentJob.id },
   }));
 
-  const applyUrl = currentJob.applicationUrl || currentJob.sourceUrl;
+  const rawApplyUrl = currentJob.applicationUrl || currentJob.sourceUrl;
+  const appBaseUrl = process.env.NEXT_PUBLIC_APP_URL || "";
+  const applyUrl = rawApplyUrl && appBaseUrl
+    ? `${appBaseUrl}/api/jobs/apply/${currentJob.id}?u=${user.id}`
+    : rawApplyUrl;
+
   const text = MSG.jobCard(currentJob, page + 1, jobs.length);
   const replyMarkup = {
     inline_keyboard: KB.paginatedJobActions(currentJob.id, applyUrl, isSaved, page, jobs.length),
@@ -215,7 +219,12 @@ export async function handleSaved(
   const currentItem = saved[page];
   const currentJob = currentItem.job;
 
-  const applyUrl = currentJob.applicationUrl || currentJob.sourceUrl;
+  const rawApplyUrl = currentJob.applicationUrl || currentJob.sourceUrl;
+  const appBaseUrl = process.env.NEXT_PUBLIC_APP_URL || "";
+  const applyUrl = rawApplyUrl && appBaseUrl
+    ? `${appBaseUrl}/api/jobs/apply/${currentJob.id}?u=${user.id}`
+    : rawApplyUrl;
+
   const text = MSG.savedJobCard(currentJob, page + 1, saved.length);
   const replyMarkup = {
     inline_keyboard: KB.paginatedSavedJobActions(currentJob.id, applyUrl, page, saved.length),

@@ -261,7 +261,9 @@ export class NotificationDispatcher {
             summary: job.summary,
           });
 
-          const appUrl = job.applicationUrl || job.sourceUrl;
+          const rawAppUrl = job.applicationUrl || job.sourceUrl;
+          const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "";
+          const appUrl = rawAppUrl && baseUrl ? `${baseUrl}/api/jobs/apply/${job.id}?u=${user.id}` : rawAppUrl;
           const inlineKeyboard = KB.jobAlertActions(job.id, appUrl);
 
           // Dispatch Telegram message with 429 retry support
@@ -409,7 +411,9 @@ export class NotificationDispatcher {
             summary: job.summary,
           });
 
-          const appUrl = job.applicationUrl || job.sourceUrl;
+          const rawAppUrl = job.applicationUrl || job.sourceUrl;
+          const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "";
+          const appUrl = rawAppUrl && baseUrl ? `${baseUrl}/api/jobs/apply/${job.id}?u=${user.id}` : rawAppUrl;
           const inlineKeyboard = KB.jobAlertActions(job.id, appUrl);
 
           const sendResult = await this.sendWithRetry({

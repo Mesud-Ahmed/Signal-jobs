@@ -72,7 +72,7 @@ export default function AdminNewJobPage() {
       setError("Text must be at least 10 characters if no image is provided.");
       return;
     }
-    
+
     setExtracting(true);
     setError(null);
 
@@ -80,9 +80,9 @@ export default function AdminNewJobPage() {
       const res = await fetch("/api/admin/jobs/extract", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          rawText, 
-          sourceName, 
+        body: JSON.stringify({
+          rawText,
+          sourceName,
           sourceUrl,
           base64Image: imageBase64,
           mimeType: imageMimeType
@@ -296,7 +296,7 @@ export default function AdminNewJobPage() {
             )}
           </CardTitle>
           <CardDescription>
-            Copy and paste the vacancy text from Telegram or job portals. AI will split multi-position postings.
+            Copy and paste the vacancy text from Telegram or job portals.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -305,11 +305,11 @@ export default function AdminNewJobPage() {
               <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider">
                 Upload Image <span className="text-slate-500 font-normal normal-case">(optional)</span>
               </label>
-              
+
               {!imagePreviewUrl ? (
                 <div className="relative border-2 border-dashed border-slate-700 hover:border-sky-500/50 rounded-lg bg-slate-950/50 p-6 flex flex-col items-center justify-center transition-colors">
-                  <input 
-                    type="file" 
+                  <input
+                    type="file"
                     accept="image/png, image/jpeg, image/webp"
                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                     onChange={(e) => {
@@ -319,12 +319,12 @@ export default function AdminNewJobPage() {
                         setError("Image must be smaller than 4MB");
                         return;
                       }
-                      
+
                       const reader = new FileReader();
                       reader.onloadend = () => {
                         const result = reader.result as string;
                         setImagePreviewUrl(result);
-                        
+
                         // Extract base64 part and mime type
                         const matches = result.match(/^data:(image\/[a-zA-Z0-9]+);base64,(.+)$/);
                         if (matches && matches.length === 3) {
@@ -344,8 +344,8 @@ export default function AdminNewJobPage() {
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={imagePreviewUrl} alt="Upload preview" className="w-full h-full object-contain" />
                   <div className="absolute inset-0 bg-slate-950/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <Button 
-                      variant="danger" 
+                    <Button
+                      variant="danger"
                       size="sm"
                       onClick={() => {
                         setImagePreviewUrl("");
@@ -359,7 +359,7 @@ export default function AdminNewJobPage() {
                 </div>
               )}
             </div>
-            
+
             <div className="flex flex-col space-y-2">
               <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider">
                 Raw Text <span className="text-slate-500 font-normal normal-case">(optional if image is provided)</span>
@@ -375,18 +375,7 @@ export default function AdminNewJobPage() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
-                Source Name <span className="text-slate-500 font-normal">(optional)</span>
-              </label>
-              <input
-                type="text"
-                value={sourceName}
-                onChange={(e) => setSourceName(e.target.value)}
-                placeholder="e.g. Telegram Channel / EthioJobs"
-                className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white focus:border-sky-500 focus:outline-none"
-              />
-            </div>
+
             <div>
               <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
                 Source / Application Link <span className="text-slate-500 font-normal">(optional)</span>
@@ -422,11 +411,10 @@ export default function AdminNewJobPage() {
                   <button
                     key={i}
                     onClick={() => setCurrentIdx(i)}
-                    className={`w-full text-left px-3 py-2.5 rounded-lg border text-xs transition-all ${
-                      i === currentIdx
+                    className={`w-full text-left px-3 py-2.5 rounded-lg border text-xs transition-all ${i === currentIdx
                         ? "border-sky-500/50 bg-sky-500/10 text-white"
                         : "border-slate-800 bg-slate-950/40 text-slate-400 hover:border-slate-600 hover:text-slate-200"
-                    }`}
+                      }`}
                   >
                     <div className="flex items-center justify-between gap-1 mb-0.5">
                       <span className="font-semibold truncate">{p.formData.title || `Position ${i + 1}`}</span>
@@ -554,11 +542,10 @@ export default function AdminNewJobPage() {
                                   : [...current.formData.categories, cat.id];
                                 updateField("categories", next);
                               }}
-                              className={`w-full text-left px-2.5 py-1.5 rounded-md border text-[11px] font-medium transition-all flex items-center justify-between ${
-                                isCatSelected
+                              className={`w-full text-left px-2.5 py-1.5 rounded-md border text-[11px] font-medium transition-all flex items-center justify-between ${isCatSelected
                                   ? "border-sky-500/60 bg-sky-500/15 text-sky-300 font-semibold"
                                   : "border-slate-800 bg-slate-900/60 text-slate-400 hover:border-slate-700 hover:text-slate-200"
-                              }`}
+                                }`}
                             >
                               <span>{isCatSelected ? "✓ " : ""}{cat.label}</span>
                               {hasSubs && (
@@ -585,11 +572,10 @@ export default function AdminNewJobPage() {
                                         }
                                         updateField("categories", next);
                                       }}
-                                      className={`text-left px-2 py-1 rounded border text-[10px] transition-all ${
-                                        isSubSelected
+                                      className={`text-left px-2 py-1 rounded border text-[10px] transition-all ${isSubSelected
                                           ? "border-emerald-500/60 bg-emerald-500/15 text-emerald-300 font-semibold"
                                           : "border-slate-800/80 bg-slate-900/30 text-slate-400 hover:border-slate-700"
-                                      }`}
+                                        }`}
                                     >
                                       {isSubSelected ? "✓ " : "↳ "}{sub.label}
                                     </button>

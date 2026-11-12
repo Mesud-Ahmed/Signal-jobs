@@ -11,7 +11,18 @@ import { TAXONOMY, EXPERIENCE_LEVELS, ETHIOPIAN_LOCATIONS } from "@/lib/constant
 
 
 export default function BroadcastPage() {
-  
+  // Protect route against Data Entry staff access
+  useEffect(() => {
+    fetch("/api/admin/auth/me")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.user?.role === "DATA_ENTRY") {
+          window.location.href = "/admin/jobs";
+        }
+      })
+      .catch(() => null);
+  }, []);
+
   const [status, setStatus] = useState("all");
   const [onboarding, setOnboarding] = useState("all");
   const [category, setCategory] = useState("all");

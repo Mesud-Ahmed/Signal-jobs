@@ -1,5 +1,7 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
+import { getAdminSession } from "@/lib/auth";
 import { 
   PlusCircle, 
   Users, 
@@ -9,8 +11,7 @@ import {
   ShieldCheck, 
   Sparkles, 
   Bookmark, 
-  Activity,
-  Inbox
+  Activity
 } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -20,6 +21,11 @@ import { formatDate } from "@/lib/utils";
 export const dynamic = "force-dynamic";
 
 export default async function AdminDashboardPage() {
+  const session = await getAdminSession();
+  if (session?.role === "DATA_ENTRY") {
+    redirect("/admin/jobs");
+  }
+
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
 
@@ -32,7 +38,6 @@ export default async function AdminDashboardPage() {
     notificationsFailed,
     notificationsPending,
     totalSavedJobs,
-    pendingDrafts,
     recentJobs,
     recentInteractions,
   ] = await Promise.all([
@@ -44,7 +49,6 @@ export default async function AdminDashboardPage() {
     db.notification.count({ where: { status: "FAILED" } }),
     db.notification.count({ where: { status: "PENDING" } }),
     db.savedJob.count(),
-    db.job.count({ where: { status: "DRAFT" } }),
     db.job.findMany({
       take: 6,
       orderBy: { createdAt: "desc" },
@@ -117,12 +121,6 @@ export default async function AdminDashboardPage() {
         </div>
 
         <div className="flex items-center gap-3">
-          <Link href="/admin/inbox">
-            <Button variant="outline" className="gap-2 border-sky-500/30 text-sky-300 hover:bg-sky-950/40">
-              <Inbox className="h-4 w-4 text-sky-400" />
-              <span>Scraper Inbox {pendingDrafts > 0 ? `(${pendingDrafts})` : ""}</span>
-            </Button>
-          </Link>
           <Link href="/admin/jobs/new">
             <Button variant="primary" className="gap-2 shadow-lg shadow-sky-500/20">
               <PlusCircle className="h-4 w-4" />
@@ -131,32 +129,6 @@ export default async function AdminDashboardPage() {
           </Link>
         </div>
       </div>
-
-      {/* Pending Scraper Drafts Highlight Banner */}
-      {pendingDrafts > 0 && (
-        <div className="p-4 rounded-2xl bg-gradient-to-r from-sky-950/60 via-slate-900 to-indigo-950/40 border border-sky-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg shadow-sky-950/20">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-500/20 text-sky-400 border border-sky-500/30">
-              <Inbox className="h-5 w-5" />
-            </div>
-            <div>
-              <h4 className="text-sm font-bold text-white flex items-center gap-2">
-                <span>{pendingDrafts} Job Draft{pendingDrafts > 1 ? "s" : ""} Ready for Review</span>
-                <span className="flex h-2 w-2 rounded-full bg-sky-400 animate-ping" />
-              </h4>
-              <p className="text-xs text-slate-400">
-                Automatically scraped and normalized from monitored channels. Review and broadcast in 1 click.
-              </p>
-            </div>
-          </div>
-          <Link href="/admin/inbox">
-            <Button size="sm" className="bg-sky-500 hover:bg-sky-400 text-slate-950 font-semibold gap-1.5 h-8 text-xs shrink-0">
-              <span>Open Inbox</span>
-              <ArrowRight className="h-3.5 w-3.5" />
-            </Button>
-          </Link>
-        </div>
-      )}
 
       {/* KPI Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -282,6 +254,13 @@ export default async function AdminDashboardPage() {
                   </CardTitle>
                   <CardDescription>User activity events on Telegram.</CardDescription>
                 </div>
+                <Link
+                  href="/admin/interactions"
+                  className="text-xs text-sky-400 hover:text-sky-300 font-medium transition-colors flex items-center gap-1"
+                >
+                  <span>View All</span>
+                  <ArrowRight className="h-3 w-3" />
+                </Link>
               </div>
             </CardHeader>
             <CardContent>

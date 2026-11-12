@@ -23,7 +23,7 @@ async function main() {
   // Ensure SSL parameter is present for Railway TCP proxy
   if (connectionUrl.includes("railway") || connectionUrl.includes("rlwy.net")) {
     if (!connectionUrl.includes("sslmode")) {
-      connectionUrl += (connectionUrl.includes("?") ? "&" : "?") + "sslmode=no-verify";
+      connectionUrl += (connectionUrl.includes("?") ? "&" : "?") + "sslmode=require";
     }
   }
 

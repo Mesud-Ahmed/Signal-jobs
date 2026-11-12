@@ -89,32 +89,22 @@ export class UserService {
       },
     });
 
-    // Record interaction
-    await this.trackInteraction(userId, null, "PROFILE_UPDATED", {
-      updatedFields: Object.keys(data),
-    });
-
+    // Record interaction: only meaningful actions are logged (JOB_SAVED, JOB_APPLIED, PREFERENCES_CLICKED)
     return result;
   }
 
   async pauseNotifications(userId: string) {
-    const updated = await db.user.update({
+    return await db.user.update({
       where: { id: userId },
       data: { notificationsPaused: true },
     });
-
-    await this.trackInteraction(userId, null, "NOTIFICATIONS_PAUSED");
-    return updated;
   }
 
   async resumeNotifications(userId: string) {
-    const updated = await db.user.update({
+    return await db.user.update({
       where: { id: userId },
       data: { notificationsPaused: false },
     });
-
-    await this.trackInteraction(userId, null, "NOTIFICATIONS_RESUMED");
-    return updated;
   }
 
   // ── Saved Jobs ─────────────────────────────────────────────────────────────
@@ -131,12 +121,9 @@ export class UserService {
   }
 
   async unsaveJob(userId: string, jobId: string) {
-    const deleted = await db.savedJob.deleteMany({
+    return await db.savedJob.deleteMany({
       where: { userId, jobId },
     });
-
-    await this.trackInteraction(userId, jobId, "JOB_UNSAVED");
-    return deleted;
   }
 
   async isJobSaved(userId: string, jobId: string): Promise<boolean> {

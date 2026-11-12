@@ -39,7 +39,3 @@ next-env.d.ts
 # prisma
 prisma/*.db
 prisma/*.db-journal
-
-# backups
-backups/
-railway_backup*.json

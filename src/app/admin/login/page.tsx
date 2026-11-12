@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, Suspense } from "react";
+import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Radio, ShieldCheck, Lock, User, AlertCircle, ArrowRight, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -142,8 +143,15 @@ export default function AdminLoginPage() {
     <div className="flex min-h-[85vh] flex-col items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
       <div className="w-full max-w-md space-y-6">
         <div className="flex flex-col items-center text-center">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-sky-500 text-slate-950 shadow-lg shadow-sky-500/20 mb-3">
-            <Radio className="h-6 w-6" />
+          <div className="flex h-16 w-16 items-center justify-center rounded-2xl overflow-hidden bg-slate-900 border border-slate-700/60 shadow-xl shadow-sky-500/10 mb-3 p-1">
+            <Image
+              src="/logo.png"
+              alt="Signal Job Logo"
+              width={64}
+              height={64}
+              className="h-full w-full object-contain"
+              priority
+            />
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-white">Signal Job Admin</h1>
           <p className="mt-1 text-xs text-slate-400">

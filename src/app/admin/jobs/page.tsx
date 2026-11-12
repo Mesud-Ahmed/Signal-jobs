@@ -10,12 +10,13 @@ import {
   MapPin, 
   AlertCircle,
   CheckCircle2,
-  X
+  X,
+  ExternalLink
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { formatDate } from "@/lib/utils";
+import { formatDate, cn } from "@/lib/utils";
 import { TAXONOMY, formatCategoryLabels } from "@/lib/constants";
 
 interface JobItem {
@@ -31,6 +32,7 @@ interface JobItem {
   publishedAt: string | null;
   createdAt: string;
   sourceUrl: string | null;
+  applicationUrl: string | null;
 }
 
 export default function AdminJobsPage() {
@@ -45,6 +47,19 @@ export default function AdminJobsPage() {
   const [error, setError] = useState<string | null>(null);
   const [actionSuccess, setActionSuccess] = useState<string | null>(null);
   const [deletingExpired, setDeletingExpired] = useState(false);
+  const [userRole, setUserRole] = useState<string | null>(null);
+
+  // Fetch current admin/staff session role
+  useEffect(() => {
+    fetch("/api/admin/auth/me")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.user?.role) setUserRole(data.user.role);
+      })
+      .catch(() => null);
+  }, []);
+
+  const isDataEntry = userRole === "DATA_ENTRY";
 
   // Debounce search query for live searching
   useEffect(() => {
@@ -144,16 +159,18 @@ export default function AdminJobsPage() {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleBulkDeleteExpired}
-            disabled={deletingExpired}
-            className="gap-2 border-red-500/30 text-red-400 hover:bg-red-500/10 hover:text-red-300 hover:border-red-500/50"
-          >
-            <Trash2 className="h-4 w-4" />
-            <span>{deletingExpired ? "Cleaning..." : "Delete Expired Jobs"}</span>
-          </Button>
+          {!isDataEntry && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleBulkDeleteExpired}
+              disabled={deletingExpired}
+              className="gap-2 border-red-500/30 text-red-400 hover:bg-red-500/10 hover:text-red-300 hover:border-red-500/50"
+            >
+              <Trash2 className="h-4 w-4" />
+              <span>{deletingExpired ? "Cleaning..." : "Delete Expired Jobs"}</span>
+            </Button>
+          )}
           <Link href="/admin/jobs/new">
             <Button variant="primary" size="sm" className="gap-2">
               <PlusCircle className="h-4 w-4" />
@@ -291,53 +308,82 @@ export default function AdminJobsPage() {
                   <th className="py-3 px-4">Company</th>
                   <th className="py-3 px-4">Category & Level</th>
                   <th className="py-3 px-4">Date / Deadline</th>
-                  <th className="py-3 px-4 text-right">Delete</th>
+                  {!isDataEntry && <th className="py-3 px-4 text-right">Delete</th>}
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/60">
-                {jobs.map((job) => (
-                  <tr key={job.id} className="hover:bg-slate-800/40 transition-colors">
-                    <td className="py-3.5 px-4">
-                      <div className="font-semibold text-sm text-white">{job.title}</div>
-                      {job.location && (
-                        <div className="flex items-center gap-1 text-slate-400 mt-0.5">
-                          <MapPin className="h-3 w-3 text-sky-400" />
-                          <span>{job.location}</span>
+                {jobs.map((job) => {
+                  const targetUrl = job.sourceUrl || job.applicationUrl;
+                  return (
+                    <tr
+                      key={job.id}
+                      onClick={() => {
+                        if (targetUrl) {
+                          window.open(targetUrl, "_blank", "noopener,noreferrer");
+                        }
+                      }}
+                      className={cn(
+                        "transition-colors",
+                        targetUrl ? "cursor-pointer hover:bg-slate-800/60" : "hover:bg-slate-800/30"
+                      )}
+                    >
+                      <td className="py-3.5 px-4">
+                        <div className="font-semibold text-sm text-white flex items-center gap-1.5 group">
+                          <span className={cn(targetUrl && "group-hover:text-sky-400 group-hover:underline transition-colors")}>
+                            {job.title}
+                          </span>
+                          {targetUrl && (
+                            <ExternalLink className="h-3.5 w-3.5 text-slate-500 group-hover:text-sky-400 transition-colors shrink-0" />
+                          )}
                         </div>
-                      )}
-                    </td>
-                    <td className="py-3.5 px-4 text-slate-300 font-medium">
-                      {job.company || <span className="text-slate-600">Unspecified</span>}
-                    </td>
-                    <td className="py-3.5 px-4 space-y-1">
-                      <div>
-                        <Badge variant="secondary">{formatCategoryLabels(job.category) || "General"}</Badge>
-                      </div>
-                      {job.experienceLevel && (
-                        <div className="text-[11px] text-slate-400">{job.experienceLevel}</div>
-                      )}
-                    </td>
-                    <td className="py-3.5 px-4 text-slate-400 space-y-0.5">
-                      <div>{job.publishedAt ? formatDate(job.publishedAt) : formatDate(job.createdAt)}</div>
-                      {job.deadline && (
-                        <div className="text-[10px] text-amber-400/80">
-                          Due: {formatDate(job.deadline)}
+                        {job.location && (
+                          <div className="flex items-center gap-1 text-slate-400 mt-0.5">
+                            <MapPin className="h-3 w-3 text-sky-400" />
+                            <span>{job.location}</span>
+                          </div>
+                        )}
+                      </td>
+                      <td className="py-3.5 px-4 text-slate-300 font-medium">
+                        {job.company || <span className="text-slate-600">Unspecified</span>}
+                      </td>
+                      <td className="py-3.5 px-4 space-y-1">
+                        <div>
+                          <Badge variant="secondary">{formatCategoryLabels(job.category) || "General"}</Badge>
                         </div>
+                        {job.experienceLevel && (
+                          <div className="text-[11px] text-slate-400">{job.experienceLevel}</div>
+                        )}
+                      </td>
+                      <td className="py-3.5 px-4 text-slate-400 space-y-0.5">
+                        <div>{job.publishedAt ? formatDate(job.publishedAt) : formatDate(job.createdAt)}</div>
+                        {job.deadline && (
+                          <div className="text-[10px] text-amber-400/80">
+                            Due: {formatDate(job.deadline)}
+                          </div>
+                        )}
+                      </td>
+                      {!isDataEntry && (
+                        <td
+                          className="py-3.5 px-4 text-right"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0 text-slate-400 hover:text-red-400 hover:bg-red-500/10 cursor-pointer"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteJob(job.id, job.title);
+                            }}
+                            title="Delete Job Permanently"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </td>
                       )}
-                    </td>
-                    <td className="py-3.5 px-4 text-right">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 w-8 p-0 text-slate-400 hover:text-red-400 hover:bg-red-500/10"
-                        onClick={() => handleDeleteJob(job.id, job.title)}
-                        title="Delete Job Permanently"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

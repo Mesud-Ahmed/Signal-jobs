@@ -5,8 +5,8 @@ import { getAdminSession } from "@/lib/auth";
 export async function GET(req: NextRequest) {
   try {
     const session = await getAdminSession();
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!session || session.role === "DATA_ENTRY") {
+      return NextResponse.json({ error: "Forbidden: Notifications log is restricted to Administrators." }, { status: 403 });
     }
 
     const { searchParams } = new URL(req.url);

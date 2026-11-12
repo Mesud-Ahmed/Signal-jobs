@@ -1,13 +1,18 @@
+import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { getAdminSession } from "@/lib/auth";
 import { ShieldCheck, Database, Bot, Sparkles, CheckCircle2, Server } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { StaffManagementCard } from "./staff-management-card";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminSettingsPage() {
   const session = await getAdminSession();
+  if (!session || session.role === "DATA_ENTRY") {
+    redirect("/admin/jobs");
+  }
   const adminLogs = await db.adminLog.findMany({
     take: 10,
     orderBy: { createdAt: "desc" },
@@ -87,6 +92,9 @@ export default async function AdminSettingsPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Staff & Data Entry Management */}
+      <StaffManagementCard />
 
       {/* Admin Audit Logs */}
       <Card className="border-slate-800 bg-slate-900/70">

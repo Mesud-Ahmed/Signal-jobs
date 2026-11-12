@@ -1,5 +1,7 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
+import { getAdminSession } from "@/lib/auth";
 import { Prisma } from "@prisma/client";
 import { Users, Send, MapPin, CheckCircle, PauseCircle, Briefcase, Bookmark } from "lucide-react";
 import { Card } from "@/components/ui/card";
@@ -26,6 +28,11 @@ export default async function AdminUsersPage({
 }: {
   searchParams: { [key: string]: string | string[] | undefined };
 }) {
+  const session = await getAdminSession();
+  if (!session || session.role === "DATA_ENTRY") {
+    redirect("/admin/jobs");
+  }
+
   const params = await searchParams; // Next.js 15+ searchParams is a Promise
   const q = (params.q as string) || "";
   const status = (params.status as string) || "all";

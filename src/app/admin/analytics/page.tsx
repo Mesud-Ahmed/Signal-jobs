@@ -11,6 +11,9 @@ export default async function AnalyticsPage() {
   if (!session) {
     redirect("/admin/login");
   }
+  if (session.role === "DATA_ENTRY") {
+    redirect("/admin/jobs");
+  }
 
   const now = new Date();
   const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());

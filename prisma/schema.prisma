@@ -163,6 +163,8 @@ model UserJobInteraction {
 
   @@index([userId])
   @@index([jobId])
+  @@index([createdAt])
+  @@index([action, createdAt])
 }
 
 model AdminLog {

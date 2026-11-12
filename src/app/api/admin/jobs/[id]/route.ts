@@ -114,8 +114,8 @@ export async function DELETE(
 ) {
   try {
     const session = await getAdminSession();
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!session || session.role === "DATA_ENTRY") {
+      return NextResponse.json({ error: "Forbidden: Data Entry accounts are not permitted to delete jobs." }, { status: 403 });
     }
 
     const { id } = await params;

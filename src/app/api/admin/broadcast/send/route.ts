@@ -42,8 +42,8 @@ async function sendBroadcastBackground(users: { telegramId: string }[], message:
 export async function POST(req: NextRequest) {
   try {
     const session = await getAdminSession();
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!session || session.role === "DATA_ENTRY") {
+      return NextResponse.json({ error: "Forbidden: Broadcasts are restricted to Administrators." }, { status: 403 });
     }
 
     const body = await req.json();

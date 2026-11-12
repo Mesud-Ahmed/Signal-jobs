@@ -32,9 +32,14 @@ async function main() {
   // Ensure SSL parameter is present for Railway TCP proxy
   if (connectionUrl.includes("railway") || connectionUrl.includes("rlwy.net")) {
     if (!connectionUrl.includes("sslmode")) {
-      connectionUrl += (connectionUrl.includes("?") ? "&" : "?") + "sslmode=no-verify";
+      connectionUrl += (connectionUrl.includes("?") ? "&" : "?") + "sslmode=require";
     }
   }
+  if (!connectionUrl.includes("connect_timeout")) {
+    connectionUrl += (connectionUrl.includes("?") ? "&" : "?") + "connect_timeout=30&pool_timeout=30";
+  }
+
+  process.env.DATABASE_URL = connectionUrl;
 
   // Find latest backup file if not specified in args
   let backupFile = process.argv[2];
@@ -69,6 +74,21 @@ async function main() {
       },
     },
   });
+
+  // Test connection with retry
+  let retries = 5;
+  while (retries > 0) {
+    try {
+      await prisma.$connect();
+      console.log("✅ Target database connected successfully!");
+      break;
+    } catch (err: any) {
+      retries--;
+      console.log(`⚠️ Connection attempt failed (${err.message}). Retrying... (${retries} left)`);
+      if (retries === 0) throw err;
+      await new Promise((r) => setTimeout(r, 3000));
+    }
+  }
 
   const BATCH_SIZE = 500;
 
