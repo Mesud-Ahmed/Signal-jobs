@@ -16,7 +16,8 @@ const ACTION_OPTIONS = [
 
 export function InteractionFilters() {
   const router = useRouter();
-  const pathname = usePathname();
+  const rawPathname = usePathname();
+  const pathname = rawPathname || "/admin/interactions";
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
 

@@ -52,7 +52,7 @@ function AdminLoginForm() {
           <span>Admin Authentication</span>
         </CardTitle>
         <CardDescription>
-          Enter your admin credentials to access job ingestion and subscriber management.
+          Enter your admin credentials.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -129,10 +129,7 @@ function AdminLoginForm() {
           </Button>
         </form>
 
-        <div className="mt-4 rounded-lg bg-slate-950/60 p-3 border border-slate-800 text-[11px] text-slate-400">
-          <span className="font-semibold text-slate-300">Local Dev Credentials:</span><br />
-          Username: <code className="text-sky-300 font-mono">admin</code> | Password: <code className="text-sky-300 font-mono">admin_dev_password_123</code>
-        </div>
+
       </CardContent>
     </Card>
   );

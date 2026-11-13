@@ -22,7 +22,10 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminDashboardPage() {
   const session = await getAdminSession();
-  if (session?.role === "DATA_ENTRY") {
+  if (!session) {
+    redirect("/admin/login");
+  }
+  if (session.role === "DATA_ENTRY") {
     redirect("/admin/jobs");
   }
 
@@ -281,7 +284,7 @@ export default async function AdminDashboardPage() {
                         </span>
                       </div>
                       <div className="text-white text-[11px] truncate">
-                        {act.user.firstName || "Seeker"} {act.user.lastName || ""}
+                        {(act.user?.firstName || "Seeker")} {act.user?.lastName || ""}
                         {act.job ? ` • ${act.job.title}` : ""}
                       </div>
                     </div>
