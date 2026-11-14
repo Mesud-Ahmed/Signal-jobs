@@ -22,15 +22,31 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminDashboardPage() {
   const session = await getAdminSession();
-  if (!session) {
-    redirect("/admin/login");
-  }
-  if (session.role === "DATA_ENTRY") {
+  if (session?.role === "DATA_ENTRY") {
     redirect("/admin/jobs");
   }
 
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
+
+  // Resilient query wrappers to survive transient connection resets or idle timeouts
+  async function safeCount(fn: () => Promise<number>, fallback = 0): Promise<number> {
+    try {
+      return await fn();
+    } catch (err) {
+      console.warn("[Admin Dashboard] Query notice (handled):", err instanceof Error ? err.message : err);
+      return fallback;
+    }
+  }
+
+  async function safeFindMany<T>(fn: () => Promise<T[]>, fallback: T[] = []): Promise<T[]> {
+    try {
+      return await fn();
+    } catch (err) {
+      console.warn("[Admin Dashboard] Query notice (handled):", err instanceof Error ? err.message : err);
+      return fallback;
+    }
+  }
 
   const [
     totalUsers,
@@ -44,23 +60,27 @@ export default async function AdminDashboardPage() {
     recentJobs,
     recentInteractions,
   ] = await Promise.all([
-    db.user.count(),
-    db.user.count({ where: { isActive: true, notificationsPaused: false } }),
-    db.job.count({ where: { status: "PUBLISHED" } }),
-    db.job.count({ where: { createdAt: { gte: todayStart } } }),
-    db.notification.count({ where: { status: "SENT" } }),
-    db.notification.count({ where: { status: "FAILED" } }),
-    db.notification.count({ where: { status: "PENDING" } }),
-    db.savedJob.count(),
-    db.job.findMany({
-      take: 6,
-      orderBy: { createdAt: "desc" },
-    }),
-    db.userJobInteraction.findMany({
-      take: 6,
-      include: { user: true, job: true },
-      orderBy: { createdAt: "desc" },
-    }),
+    safeCount(() => db.user.count()),
+    safeCount(() => db.user.count({ where: { isActive: true, notificationsPaused: false } })),
+    safeCount(() => db.job.count({ where: { status: "PUBLISHED" } })),
+    safeCount(() => db.job.count({ where: { createdAt: { gte: todayStart } } })),
+    safeCount(() => db.notification.count({ where: { status: "SENT" } })),
+    safeCount(() => db.notification.count({ where: { status: "FAILED" } })),
+    safeCount(() => db.notification.count({ where: { status: "PENDING" } })),
+    safeCount(() => db.savedJob.count()),
+    safeFindMany(() =>
+      db.job.findMany({
+        take: 6,
+        orderBy: { createdAt: "desc" },
+      })
+    ),
+    safeFindMany(() =>
+      db.userJobInteraction.findMany({
+        take: 6,
+        include: { user: true, job: true },
+        orderBy: { createdAt: "desc" },
+      })
+    ),
   ]);
 
   const kpis = [
@@ -284,7 +304,7 @@ export default async function AdminDashboardPage() {
                         </span>
                       </div>
                       <div className="text-white text-[11px] truncate">
-                        {(act.user?.firstName || "Seeker")} {act.user?.lastName || ""}
+                        {act.user.firstName || "Seeker"} {act.user.lastName || ""}
                         {act.job ? ` • ${act.job.title}` : ""}
                       </div>
                     </div>

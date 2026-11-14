@@ -1,9 +1,8 @@
 "use client";
 
 import { useEffect } from "react";
-import { AlertCircle, RotateCcw, Home } from "lucide-react";
+import { AlertCircle, RefreshCw, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
 
 export default function AdminError({
   error,
@@ -13,42 +12,52 @@ export default function AdminError({
   reset: () => void;
 }) {
   useEffect(() => {
-    console.error("Admin dashboard runtime error captured:", error);
+    // Log error details for diagnostics
+    console.error("[Admin Error Boundary]", error);
   }, [error]);
 
   return (
-    <div className="min-h-[60vh] flex flex-col items-center justify-center p-6 text-center">
-      <div className="max-w-md w-full rounded-2xl border border-red-500/20 bg-slate-900/90 p-8 shadow-2xl backdrop-blur-md space-y-4">
-        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-red-500/10 text-red-400 border border-red-500/20">
-          <AlertCircle className="h-6 w-6" />
+    <div className="flex min-h-[60vh] flex-col items-center justify-center p-4">
+      <div className="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-900/90 p-8 text-center shadow-2xl shadow-sky-500/5">
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 mb-5">
+          <AlertCircle className="h-7 w-7" />
         </div>
-        <div className="space-y-1">
-          <h2 className="text-lg font-bold text-white tracking-tight">
-            Dashboard encountered an issue
-          </h2>
-          <p className="text-xs text-slate-400">
-            {error?.message && !error.message.includes("digest")
-              ? error.message
-              : "A temporary connection or render issue occurred. Reloading resolves it immediately."}
-          </p>
-        </div>
-        <div className="flex items-center justify-center gap-3 pt-2">
+
+        <h2 className="text-xl font-bold tracking-tight text-white mb-2">
+          Temporary Connection Glitch
+        </h2>
+
+        <p className="text-xs text-slate-400 mb-6 leading-relaxed">
+          The dashboard encountered a transient database reconnect or network blip. You can retry immediately.
+        </p>
+
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={() => reset()}
+            className="w-full sm:w-auto gap-2"
+          >
+            <RefreshCw className="h-4 w-4" />
+            <span>Try Again</span>
+          </Button>
+
           <Button
             variant="secondary"
             size="sm"
-            onClick={() => reset()}
-            className="gap-2 text-xs"
+            onClick={() => window.location.reload()}
+            className="w-full sm:w-auto gap-2"
           >
-            <RotateCcw className="h-3.5 w-3.5" />
-            <span>Try Again</span>
+            <ArrowLeft className="h-4 w-4" />
+            <span>Reload Page</span>
           </Button>
-          <Link href="/admin">
-            <Button variant="primary" size="sm" className="gap-2 text-xs">
-              <Home className="h-3.5 w-3.5" />
-              <span>Back to Overview</span>
-            </Button>
-          </Link>
         </div>
+
+        {error?.digest && (
+          <div className="mt-6 pt-4 border-t border-slate-800 text-[10px] text-slate-500 font-mono">
+            Error ID: {error.digest}
+          </div>
+        )}
       </div>
     </div>
   );

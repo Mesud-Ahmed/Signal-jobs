@@ -8,8 +8,12 @@ export async function GET() {
   let dbStatus = "healthy";
 
   try {
-    // Quick probe to ensure database connectivity
-    await db.$queryRaw`SELECT 1`;
+    // Quick probe to ensure database connectivity with timeout
+    const probe = db.$queryRaw`SELECT 1`;
+    const timeout = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error("DB probe timeout")), 2500)
+    );
+    await Promise.race([probe, timeout]);
   } catch (error) {
     dbStatus = "unreachable";
     console.error("Health check DB error:", error);
