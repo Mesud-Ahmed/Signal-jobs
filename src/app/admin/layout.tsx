@@ -27,12 +27,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const router = useRouter();
   const [currentUser, setCurrentUser] = useState<{ username: string; role: string } | null>(null);
 
-  // If on login page, render without sidebar layout
-  if (pathname === "/admin/login") {
-    return <>{children}</>;
-  }
-
+  // All React Hooks must execute unconditionally at the top level
   useEffect(() => {
+    if (pathname === "/admin/login") return;
+
     fetch("/api/admin/auth/me")
       .then((res) => res.json())
       .then((data) => {
@@ -53,12 +51,19 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const handleLogout = async () => {
     try {
       await fetch("/api/admin/auth/logout", { method: "POST" });
-      router.push("/admin/login");
-      router.refresh();
     } catch (err) {
       console.error("Logout error:", err);
+    } finally {
+      // Use full navigation to cleanly clear client state and session caches
+      window.location.href = "/admin/login";
     }
   };
+
+  // If on login page, render children directly without sidebar layout
+  // (Executed AFTER all hooks to adhere to React Rules of Hooks)
+  if (pathname === "/admin/login") {
+    return <>{children}</>;
+  }
 
   const isDataEntry = currentUser?.role === "DATA_ENTRY";
 

@@ -35,8 +35,9 @@ function AdminLoginForm() {
         throw new Error(data.error || "Login failed. Please check credentials.");
       }
 
-      router.push(from);
-      router.refresh();
+      // Full document navigation ensures the newly set HTTP-only cookie
+      // is immediately sent on the document request, avoiding stale client state.
+      window.location.href = from;
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "An unexpected error occurred");
     } finally {
