@@ -160,6 +160,16 @@ export default function AdminNewJobPage() {
       setCurrentIdx(0);
       setPositionMsg({});
       setShowAllDoneBanner(true);
+
+      // If rawText was empty (user ingested from an image), auto-populate rawText with extracted description
+      if (!rawText.trim() && jobs.length > 0) {
+        const synthesized = jobs
+          .map((j) => [j.title, j.company, j.location, j.summary, j.description].filter(Boolean).join("\n"))
+          .join("\n\n---\n\n");
+        if (synthesized.trim()) {
+          setRawText(synthesized);
+        }
+      }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "AI extraction error");
     } finally {
@@ -183,6 +193,13 @@ export default function AdminNewJobPage() {
     setSaving(true);
     setError(null);
 
+    // Fallback rawText ensures image-extracted jobs never fail validation
+    const effectiveRawText =
+      rawText.trim() ||
+      current.formData.description?.trim() ||
+      current.formData.summary?.trim() ||
+      `Position: ${current.formData.title}${current.formData.company ? ` at ${current.formData.company}` : ""}${current.formData.location ? ` (${current.formData.location})` : ""}`;
+
     try {
       const res = await fetch("/api/admin/jobs", {
         method: "POST",
@@ -193,7 +210,7 @@ export default function AdminNewJobPage() {
           experienceLevel: current.formData.experienceLevels,
           education: current.formData.education,
           deadline: current.formData.deadline || null,
-          rawText,
+          rawText: effectiveRawText,
           sourceName,
           sourceUrl,
           status: "PUBLISHED",

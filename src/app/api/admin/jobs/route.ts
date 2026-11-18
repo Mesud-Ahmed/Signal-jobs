@@ -94,7 +94,14 @@ export async function POST(req: NextRequest) {
       status, // "DRAFT" or "PUBLISHED"
     } = body;
 
-    if (!title || !rawText) {
+    const effectiveRawText =
+      (rawText && typeof rawText === "string" && rawText.trim()) ||
+      (description && typeof description === "string" && description.trim()) ||
+      (summary && typeof summary === "string" && summary.trim()) ||
+      (title && typeof title === "string" && `Position: ${title}${company ? ` at ${company}` : ""}`) ||
+      "";
+
+    if (!title || !effectiveRawText) {
       return NextResponse.json(
         { error: "Job title and raw text are required fields." },
         { status: 400 }
@@ -137,7 +144,7 @@ export async function POST(req: NextRequest) {
         salary: salary || null,
         applicationInstructions: applicationInstructions || null,
         applicationUrl: applicationUrl || null,
-        rawText,
+        rawText: effectiveRawText,
         sourceName: sourceName || null,
         sourceUrl: sourceUrl || null,
         status: jobStatus,

@@ -475,7 +475,7 @@ export const MSG = {
       `/pause — Pause job alerts temporarily\n` +
       `/resume — Resume job alerts\n` +
       `/help — Show this reference\n\n` +
-      `<i>Signal Job is a Telegram-first job discovery assistant for Ethiopian job seekers.</i>`
+      `<i>If you have any questions or suggestions, you can contact us  @signal_jobs_support .</i>`
     );
   },
 
