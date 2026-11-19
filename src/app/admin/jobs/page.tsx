@@ -11,7 +11,8 @@ import {
   AlertCircle,
   CheckCircle2,
   X,
-  ExternalLink
+  ExternalLink,
+  Calendar
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -44,6 +45,7 @@ export default function AdminJobsPage() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
+  const [postedTodayCount, setPostedTodayCount] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [actionSuccess, setActionSuccess] = useState<string | null>(null);
   const [deletingExpired, setDeletingExpired] = useState(false);
@@ -87,6 +89,9 @@ export default function AdminJobsPage() {
       setJobs(data.jobs || []);
       setTotalPages(data.totalPages || 1);
       setTotal(data.total || 0);
+      if (typeof data.postedTodayCount === "number") {
+        setPostedTodayCount(data.postedTodayCount);
+      }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Error loading jobs");
     } finally {
@@ -178,6 +183,41 @@ export default function AdminJobsPage() {
             </Button>
           </Link>
         </div>
+      </div>
+
+      {/* Today's Jobs Posted Notice */}
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-sky-500/20 bg-sky-500/[0.06] p-3.5 sm:px-4 sm:py-3 text-sm">
+        <div className="flex items-center gap-3">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-sky-500/15 border border-sky-500/30 text-sky-400">
+            <Calendar className="h-4 w-4" />
+          </div>
+          <div>
+            <span className="text-xs font-semibold uppercase tracking-wider text-sky-400 block">
+              Today&apos;s Activity
+            </span>
+            <div className="text-sm text-slate-200 mt-0.5">
+              {postedTodayCount === null ? (
+                <span className="text-slate-400">Checking today&apos;s job postings...</span>
+              ) : postedTodayCount === 0 ? (
+                <span className="text-slate-300">No jobs have been posted yet today.</span>
+              ) : (
+                <span>
+                  <strong className="font-bold text-white text-base mr-1">{postedTodayCount}</strong>
+                  <span className="text-slate-300">
+                    {postedTodayCount === 1 ? "job posted today" : "jobs posted today"}
+                  </span>
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <Link href="/admin/jobs/new">
+          <Button variant="ghost" size="sm" className="h-7 text-xs text-sky-400 hover:text-sky-300 hover:bg-sky-500/10 gap-1.5">
+            <PlusCircle className="h-3.5 w-3.5" />
+            <span>Post Job</span>
+          </Button>
+        </Link>
       </div>
 
       {actionSuccess && (

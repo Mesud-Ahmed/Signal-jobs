@@ -36,7 +36,10 @@ export async function GET(req: NextRequest) {
       ];
     }
 
-    const [jobs, total] = await Promise.all([
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+
+    const [jobs, total, postedTodayCount] = await Promise.all([
       db.job.findMany({
         where,
         orderBy: { createdAt: "desc" },
@@ -44,12 +47,18 @@ export async function GET(req: NextRequest) {
         take: limit,
       }),
       db.job.count({ where }),
+      db.job.count({
+        where: {
+          createdAt: { gte: todayStart },
+        },
+      }),
     ]);
 
     return NextResponse.json({
       success: true,
       jobs,
       total,
+      postedTodayCount,
       page,
       limit,
       totalPages: Math.ceil(total / limit),
