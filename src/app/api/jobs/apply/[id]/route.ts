@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { userService } from "@/services/telegram/userService";
+import { normalizeExternalUrl } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -27,7 +28,12 @@ export async function GET(
       userService.trackInteraction(userId, job.id, "JOB_APPLIED").catch(() => null);
     }
 
-    const destination = job.applicationUrl || job.sourceUrl || "/";
+    const rawDestination = job.applicationUrl || job.sourceUrl;
+    if (!rawDestination) {
+      return NextResponse.redirect(new URL("/", req.url));
+    }
+
+    const destination = normalizeExternalUrl(rawDestination);
     return NextResponse.redirect(destination, 307);
   } catch (error) {
     console.error("View & Apply redirect error:", error);

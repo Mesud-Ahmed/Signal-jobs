@@ -17,6 +17,7 @@ import { jobMatchingEngine } from "../matching/matcher";
 import { telegramClient, TelegramApiError } from "../telegram/client";
 import { MSG, KB } from "../telegram/messages";
 import { ParsedUserPreferences } from "@/lib/types";
+import { ensureHttps, normalizeExternalUrl } from "@/lib/utils";
 
 const SEND_BATCH_SIZE = 100; // notifications per drain iteration
 const BASE_DELAY_MS = 50;    // ~20 msgs/sec — under Telegram's 30/sec global limit
@@ -261,8 +262,9 @@ export class NotificationDispatcher {
             summary: job.summary,
           });
 
-          const rawAppUrl = job.applicationUrl || job.sourceUrl;
-          const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "";
+          const rawAppUrl = normalizeExternalUrl(job.applicationUrl || job.sourceUrl);
+          const rawBase = process.env.NEXT_PUBLIC_APP_URL || (process.env.RAILWAY_PUBLIC_DOMAIN ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}` : "");
+          const baseUrl = ensureHttps(rawBase);
           const appUrl = rawAppUrl && baseUrl ? `${baseUrl}/api/jobs/apply/${job.id}?u=${user.id}` : rawAppUrl;
           const inlineKeyboard = KB.jobAlertActions(job.id, appUrl);
 
@@ -411,8 +413,9 @@ export class NotificationDispatcher {
             summary: job.summary,
           });
 
-          const rawAppUrl = job.applicationUrl || job.sourceUrl;
-          const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "";
+          const rawAppUrl = normalizeExternalUrl(job.applicationUrl || job.sourceUrl);
+          const rawBase = process.env.NEXT_PUBLIC_APP_URL || (process.env.RAILWAY_PUBLIC_DOMAIN ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}` : "");
+          const baseUrl = ensureHttps(rawBase);
           const appUrl = rawAppUrl && baseUrl ? `${baseUrl}/api/jobs/apply/${job.id}?u=${user.id}` : rawAppUrl;
           const inlineKeyboard = KB.jobAlertActions(job.id, appUrl);
 

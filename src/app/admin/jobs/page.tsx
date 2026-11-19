@@ -2,12 +2,12 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { 
-  PlusCircle, 
-  Search, 
-  Trash2, 
-  FileText, 
-  MapPin, 
+import {
+  PlusCircle,
+  Search,
+  Trash2,
+  FileText,
+  MapPin,
   AlertCircle,
   CheckCircle2,
   X,
@@ -17,7 +17,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { formatDate, cn } from "@/lib/utils";
+import { formatDate, cn, normalizeExternalUrl } from "@/lib/utils";
 import { TAXONOMY, formatCategoryLabels } from "@/lib/constants";
 
 interface JobItem {
@@ -212,12 +212,7 @@ export default function AdminJobsPage() {
           </div>
         </div>
 
-        <Link href="/admin/jobs/new">
-          <Button variant="ghost" size="sm" className="h-7 text-xs text-sky-400 hover:text-sky-300 hover:bg-sky-500/10 gap-1.5">
-            <PlusCircle className="h-3.5 w-3.5" />
-            <span>Post Job</span>
-          </Button>
-        </Link>
+
       </div>
 
       {actionSuccess && (
@@ -353,7 +348,7 @@ export default function AdminJobsPage() {
               </thead>
               <tbody className="divide-y divide-slate-800/60">
                 {jobs.map((job) => {
-                  const targetUrl = job.sourceUrl || job.applicationUrl;
+                  const targetUrl = normalizeExternalUrl(job.sourceUrl || job.applicationUrl);
                   return (
                     <tr
                       key={job.id}

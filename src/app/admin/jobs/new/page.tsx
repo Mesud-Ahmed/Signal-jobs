@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { TAXONOMY, EXPERIENCE_LEVELS, normalizeTaxonomyId, getParentCategory } from "@/lib/constants";
+import { normalizeExternalUrl } from "@/lib/utils";
 
 interface JobFormData {
   title: string;
@@ -190,8 +191,18 @@ export default function AdminNewJobPage() {
       setError("Job title is required.");
       return;
     }
+
+    const effectiveLink = (current.formData.applicationUrl || sourceUrl || "").trim();
+    if (!effectiveLink) {
+      setError("Source / Application Link is required so Telegram users can view details and apply.");
+      return;
+    }
+
     setSaving(true);
     setError(null);
+
+    const normalizedLink = normalizeExternalUrl(effectiveLink);
+    const normalizedSourceUrl = sourceUrl ? normalizeExternalUrl(sourceUrl) : normalizedLink;
 
     // Fallback rawText ensures image-extracted jobs never fail validation
     const effectiveRawText =
@@ -211,8 +222,9 @@ export default function AdminNewJobPage() {
           education: current.formData.education,
           deadline: current.formData.deadline || null,
           rawText: effectiveRawText,
+          applicationUrl: normalizedLink,
           sourceName,
-          sourceUrl,
+          sourceUrl: normalizedSourceUrl,
           status: "PUBLISHED",
         }),
       });
@@ -395,7 +407,7 @@ export default function AdminNewJobPage() {
 
             <div>
               <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
-                Source / Application Link <span className="text-slate-500 font-normal">(optional)</span>
+                Source / Application Link <span className="text-red-400 font-bold">*</span> <span className="text-slate-400 text-[11px] normal-case font-normal">(Telegram post link, application URL, or website)</span>
               </label>
               <input
                 type="url"
@@ -508,8 +520,16 @@ export default function AdminNewJobPage() {
                     <input type="text" value={current.formData.location} onChange={(e) => updateField("location", e.target.value)} placeholder="e.g. Addis Ababa or Remote" className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white focus:border-sky-500 focus:outline-none" />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">Application URL (or Original Post Link)</label>
-                    <input type="url" value={current.formData.applicationUrl} onChange={(e) => updateField("applicationUrl", e.target.value)} placeholder="https://example.com/apply" className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white focus:border-sky-500 focus:outline-none" />
+                    <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
+                      Application URL / Original Link <span className="text-red-400 font-bold">*</span>
+                    </label>
+                    <input
+                      type="url"
+                      value={current.formData.applicationUrl}
+                      onChange={(e) => updateField("applicationUrl", e.target.value)}
+                      placeholder="https://t.me/... or https://example.com/apply"
+                      className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white focus:border-sky-500 focus:outline-none"
+                    />
                   </div>
                 </div>
 

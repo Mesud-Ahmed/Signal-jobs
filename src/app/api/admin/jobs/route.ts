@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { getAdminSession } from "@/lib/auth";
 import { notificationDispatcher } from "@/services/notifications/notifier";
 import { invalidateBrowseCache } from "@/services/telegram/jobBrowseService";
+import { normalizeExternalUrl } from "@/lib/utils";
 
 export async function GET(req: NextRequest) {
   try {
@@ -117,6 +118,21 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const rawLink =
+      (applicationUrl && typeof applicationUrl === "string" && applicationUrl.trim()) ||
+      (sourceUrl && typeof sourceUrl === "string" && sourceUrl.trim()) ||
+      "";
+
+    if (!rawLink) {
+      return NextResponse.json(
+        { error: "Source / Application Link is required so job seekers can view details and apply." },
+        { status: 400 }
+      );
+    }
+
+    const normalizedLink = normalizeExternalUrl(rawLink);
+    const normalizedSourceUrl = sourceUrl ? normalizeExternalUrl(sourceUrl) : normalizedLink;
+
     const isPublishing = status === "PUBLISHED" || !status;
     const jobStatus = "PUBLISHED";
 
@@ -152,10 +168,10 @@ export async function POST(req: NextRequest) {
         requirements: requirements || null,
         salary: salary || null,
         applicationInstructions: applicationInstructions || null,
-        applicationUrl: applicationUrl || null,
+        applicationUrl: normalizedLink,
         rawText: effectiveRawText,
         sourceName: sourceName || null,
-        sourceUrl: sourceUrl || null,
+        sourceUrl: normalizedSourceUrl,
         status: jobStatus,
         publishedAt: isPublishing ? new Date() : null,
       },

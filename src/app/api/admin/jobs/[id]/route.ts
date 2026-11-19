@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getAdminSession } from "@/lib/auth";
 import { notificationDispatcher } from "@/services/notifications/notifier";
+import { normalizeExternalUrl } from "@/lib/utils";
 
 export async function GET(
   req: NextRequest,
@@ -79,9 +80,9 @@ export async function PUT(
         requirements: body.requirements !== undefined ? body.requirements : existingJob.requirements,
         salary: body.salary !== undefined ? body.salary : existingJob.salary,
         applicationInstructions: body.applicationInstructions !== undefined ? body.applicationInstructions : existingJob.applicationInstructions,
-        applicationUrl: body.applicationUrl !== undefined ? body.applicationUrl : existingJob.applicationUrl,
+        applicationUrl: body.applicationUrl !== undefined ? (body.applicationUrl ? normalizeExternalUrl(body.applicationUrl) : null) : existingJob.applicationUrl,
         sourceName: body.sourceName !== undefined ? body.sourceName : existingJob.sourceName,
-        sourceUrl: body.sourceUrl !== undefined ? body.sourceUrl : existingJob.sourceUrl,
+        sourceUrl: body.sourceUrl !== undefined ? (body.sourceUrl ? normalizeExternalUrl(body.sourceUrl) : null) : existingJob.sourceUrl,
         status: body.status || existingJob.status,
         publishedAt: isNowPublishing ? new Date() : existingJob.publishedAt,
       },

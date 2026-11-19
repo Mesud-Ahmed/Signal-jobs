@@ -10,6 +10,7 @@ import { userService, TelegramFromUser } from "./userService";
 import { jobBrowseService, invalidateBrowseCache } from "./jobBrowseService";
 import { KB, MSG, formatCategoryLabels, formatExperienceLabel, formatLocationLabel } from "./messages";
 import { JOB_CATEGORIES, EXPERIENCE_LEVELS, ETHIOPIAN_LOCATIONS, getSubcategoriesForCategory } from "@/lib/constants";
+import { ensureHttps, normalizeExternalUrl } from "@/lib/utils";
 
 type ChatId = string | number;
 
@@ -158,8 +159,9 @@ export async function handleJobs(
     where: { userId: user.id, jobId: currentJob.id },
   }));
 
-  const rawApplyUrl = currentJob.applicationUrl || currentJob.sourceUrl;
-  const appBaseUrl = process.env.NEXT_PUBLIC_APP_URL || "";
+  const rawApplyUrl = normalizeExternalUrl(currentJob.applicationUrl || currentJob.sourceUrl);
+  const rawBase = process.env.NEXT_PUBLIC_APP_URL || (process.env.RAILWAY_PUBLIC_DOMAIN ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}` : "");
+  const appBaseUrl = ensureHttps(rawBase);
   const applyUrl = rawApplyUrl && appBaseUrl
     ? `${appBaseUrl}/api/jobs/apply/${currentJob.id}?u=${user.id}`
     : rawApplyUrl;
@@ -219,8 +221,9 @@ export async function handleSaved(
   const currentItem = saved[page];
   const currentJob = currentItem.job;
 
-  const rawApplyUrl = currentJob.applicationUrl || currentJob.sourceUrl;
-  const appBaseUrl = process.env.NEXT_PUBLIC_APP_URL || "";
+  const rawApplyUrl = normalizeExternalUrl(currentJob.applicationUrl || currentJob.sourceUrl);
+  const rawBase = process.env.NEXT_PUBLIC_APP_URL || (process.env.RAILWAY_PUBLIC_DOMAIN ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}` : "");
+  const appBaseUrl = ensureHttps(rawBase);
   const applyUrl = rawApplyUrl && appBaseUrl
     ? `${appBaseUrl}/api/jobs/apply/${currentJob.id}?u=${user.id}`
     : rawApplyUrl;
