@@ -47,7 +47,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           // If staff attempts to visit restricted path, redirect to jobs
           if (
             data.user.role === "DATA_ENTRY" &&
-            !pathname.startsWith("/admin/jobs")
+            !pathname.startsWith("/admin/jobs") &&
+            !pathname.startsWith("/admin/analytics")
           ) {
             router.push("/admin/jobs");
           }
@@ -90,6 +91,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const dataEntryNavItems = [
     { label: "Jobs Manager", href: "/admin/jobs", icon: Briefcase },
     { label: "Ingest New Job", href: "/admin/jobs/new", icon: PlusCircle, highlight: true },
+    { label: "Job Analytics", href: "/admin/analytics", icon: PieChart },
   ];
 
   const visibleNavItems = isDataEntry ? dataEntryNavItems : allNavItems;

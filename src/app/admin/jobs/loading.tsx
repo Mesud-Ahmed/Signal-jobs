@@ -13,9 +13,6 @@ export default function AdminJobsLoading() {
         </div>
       </div>
 
-      {/* Notice Skeleton */}
-      <div className="h-14 w-full bg-slate-900/60 border border-slate-800 rounded-xl" />
-
       {/* Filter and Search Bar Skeleton */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
         <div className="h-9 w-full sm:w-64 bg-slate-800 rounded-lg" />
